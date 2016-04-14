@@ -75,7 +75,7 @@
   (let ((packed (my-reverse (pack-dupes lst))))
     (define (inner-encode lst acc)
       (cond
-       ((null? lst) (cons acc '()))
+       ((null? lst) acc)
        (else
         (inner-encode (cdr lst)
                       (cons
@@ -91,7 +91,7 @@
   (let ((packed (my-reverse (pack-dupes lst))))
     (define (inner-encode lst acc)
       (cond
-       ((null? lst) (cons acc '()))
+       ((null? lst) acc)
        ((eq? 1 (count-elements (car lst))) (inner-encode (cdr lst) (cons (car (car lst)) acc)))
        (else 
         (inner-encode (cdr lst)
@@ -131,32 +131,58 @@
     (cond
      ((null? lst) '())
      ((not (list? lst)) lst)
+     ((not (list? (cdr lst))) lst)
      ((eqv? (car lst) (car (cdr lst))) (inside-count (cdr lst) (+ 1 count)))
      (else (cons count (cons (car lst) '())))))
   (inside-count lst 0))
 
-(define (encode-direct lst)
-  (let ((current (count-run lst)))
+;; CURRENT: Implement run-length encoding, don't explicitly create the sublists, only count them. Also, replace singleton lists with the char.
+
+(define (encode-direct lst) ; Based off rem-dupes
+  (define (inside-direct lst last count)
     (cond
-     ((null? (cdr lst)) '())
-     (else (append current (encode-direct (cdr lst)))))))
+     ((null? lst)
+      (begin
+        (cons (cons count (cons last '())) '())
+        ))
+     ((and (not (eqv? (car lst) last))
+           (eqv? count 1))
+      (cons last (inside-direct lst (car lst) 0)))
+     ((eqv? (car lst) last) (inside-direct (cdr lst) last (+ 1 count)))
+     (else (cons (cons count (cons last '())) (inside-direct lst (car lst) 0)))
+     )
+    )
+  (inside-direct lst (car lst) 0)
+  )
 
 (define tests
   (lambda ()
+    ;; 01
     (print "d -> " (my-last '(a b c d)))
+    ;; 02
     (print "(f g) -> "(my-but-last '(a b c d e f g)))
+    ;; 03
     (print "c -> " (element-at '(a b c d e f g) 3))
+    ;; 04
     (print "5 -> " (count-elements '(a b c d e)))
+    ;; 05
     (print "(e d c b a) -> " (my-reverse '(a b c d e)))
+    ;; 06
     (print "#t -> " (my-palindrome? '(a b c d d c b a)))
     (print "#f -> " (my-palindrome? '(a b e b e dg a)))
     (print "#t -> " (my-palindrome? '()))
+    ;; 07
     (print "(a b c d e f g h) -> " (my-flatten '(a ((b (c d) e f (g) h)))))
+    ;; 08
     (print "(a b c d e f g h) -> " (rem-dupes '(a a a b b c d d e f f g g g g h h h h h)))
+    ;; 09
     (print "((a a a) (b b) (c c c) (d) (e e e e e)) -> " (pack-dupes '(a a a b b c c c d e e e e e)))
+    ;; 10
     (print "((3 a) (2 b) (3 c) (1 d) (5 e)) -> " (encode '(a a a b b c c c d e e e e e)))
+    ;; 11
     (print "((4 a) b (2 c) (2 a) d (4 e)) -> " (encode-modified '(a a a a b c c a a d e e e e)))
+    ;; 12
     (print "(a a a b b c c c d e e e e e) -> " (decode '((3 a)(2 b) (3 c) d (5 e))))
+    ;; 13
     (print "((3 a) (2 b) (3 c) d (5 e)) -> " (encode-direct '(a a a b b c c c d e e e e e)))
     ))
-
