@@ -33,8 +33,7 @@
     (cond
      ((null? list) acc)
      (else
-      (my-reverse-2 (cdr list) (cons (car list) acc))
-      )))
+      (my-reverse-2 (cdr list) (cons (car list) acc)))))
   (my-reverse-2 list '()))
 
 (define (my-palindrome? list) ; !
@@ -42,8 +41,7 @@
     (cond
      ((null? list) #t)
      ((not (eqv? (car list) (car rev))) #f)
-     (else (compare? (cdr list) (cdr rev)))
-     ))
+     (else (compare? (cdr list) (cdr rev)))))
   (compare? list (my-reverse list)))
 
 (define (my-flatten lst) ; Revisit - Rule: Both arguments to append can be calls!
@@ -58,8 +56,7 @@
     (cond
      ((null? lst) '())
      ((eqv? (car lst) last) (inside-rem (cdr lst) last))
-     (else (cons (car lst) (inside-rem (cdr lst) (car lst))))
-     ))
+     (else (cons (car lst) (inside-rem (cdr lst) (car lst))))))
   (inside-rem lst #f))
 
 (define (pack-dupes lst) ; ! Note: Last thing you do (pack the last acc, in this case) must go in base!
@@ -67,8 +64,7 @@
     (cond
      ((null? lst) (cons acc '()))
      ((eqv? (car lst) last) (inside-pack (cdr lst) (car lst) (cons (car lst) acc)))
-     (else (cons acc (inside-pack (cdr lst) (car lst) (cons (car lst) '()))))
-     ))
+     (else (cons acc (inside-pack (cdr lst) (car lst) (cons (car lst) '()))))))
   (inside-pack lst (car lst) '()))
 
 (define (encode lst) ; ! Improvement: Mod algorithm so there's no need to call my-reverse (maybe no accum)
@@ -80,12 +76,8 @@
         (inner-encode (cdr lst)
                       (cons
                        (cons (count-elements (car lst)) (cons (car (car lst)) '()))
-                       acc)))
-       )
-      )
-    (inner-encode packed '())
-    )
-  )
+                       acc)))))
+    (inner-encode packed '())))
 
 (define (encode-modified lst)
   (let ((packed (my-reverse (pack-dupes lst))))
@@ -97,12 +89,8 @@
         (inner-encode (cdr lst)
                       (cons
                        (cons (count-elements (car lst)) (cons (car (car lst)) '()))
-                       acc)))
-       )
-      )
-    (inner-encode packed '())
-    )
-  )
+                       acc)))))
+    (inner-encode packed '())))
 
 (define explode ; Takes a list (not dotted pair) of '(<fixnum> <atom>) form.
   (lambda (pair)
@@ -111,8 +99,7 @@
       (define (inner-explode itr)
         (cond
          ((<= itr 0) '())
-         (else (cons atm (inner-explode (- itr 1))))
-         ))
+         (else (cons atm (inner-explode (- itr 1))))))
       (inner-explode itr))))
 
 (define (decode lst)
@@ -142,18 +129,30 @@
   (define (inside-direct lst last count)
     (cond
      ((null? lst)
-      (begin
-        (cons (cons count (cons last '())) '())
-        ))
+      (cons (cons count (cons last '())) '()))
      ((and (not (eqv? (car lst) last))
            (eqv? count 1))
       (cons last (inside-direct lst (car lst) 0)))
      ((eqv? (car lst) last) (inside-direct (cdr lst) last (+ 1 count)))
-     (else (cons (cons count (cons last '())) (inside-direct lst (car lst) 0)))
-     )
-    )
-  (inside-direct lst (car lst) 0)
-  )
+     (else (cons (cons count (cons last '())) (inside-direct lst (car lst) 0)))))
+  (inside-direct lst (car lst) 0))
+
+(define (dupli lst)
+  (cond
+   ((null? lst)
+    '())
+   (else (append
+          (cons (car lst) (cons (car lst) '()))
+          (dupli (cdr lst))))))
+
+(define (repli lst count)
+  (define (inner-repli el count)
+    (cond
+     ((eqv? count 0) '())
+     (else (cons el (inner-repli el (- count 1))))))
+  (cond
+   ((null? lst) '())
+   (else (append (inner-repli (car lst) count) (repli (cdr lst) count)))))
 
 (define tests
   (lambda ()
@@ -185,4 +184,8 @@
     (print "(a a a b b c c c d e e e e e) -> " (decode '((3 a)(2 b) (3 c) d (5 e))))
     ;; 13
     (print "((3 a) (2 b) (3 c) d (5 e)) -> " (encode-direct '(a a a b b c c c d e e e e e)))
+    ;; 14
+    (print "(b b c c a a a a a a f f) -> " (dupli '(b c a a a f)))
+    ;; 15
+    (print "(b b b c c c a a a e e e) -> " (repli '(b c a e) 3))
     ))
