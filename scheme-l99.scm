@@ -139,8 +139,7 @@
 
 (define (dupli lst)
   (cond
-   ((null? lst)
-    '())
+   ((null? lst) '())
    (else (append
           (cons (car lst) (cons (car lst) '()))
           (dupli (cdr lst))))))
@@ -153,6 +152,26 @@
   (cond
    ((null? lst) '())
    (else (append (inner-repli (car lst) count) (repli (cdr lst) count)))))
+
+(define (drop lst outer-count) ;; Use a let?
+  (define (inner-drop lst count)
+    (cond
+     ((null? lst) '())
+     ((eqv? count 1) (inner-drop (cdr lst) outer-count))
+     (else (cons (car lst) (inner-drop (cdr lst) (- count 1))))
+     ))
+  (inner-drop lst outer-count))
+
+;; count elements and start from back?
+(define (split lst place)
+  (define (build-first lst place)
+    (cond ((eqv? place 0) '())
+          (else (cons (car lst) (build-first (cdr lst) (- place 1))))))
+  (define (build-second lst place)
+    (cond ((null? lst)'())
+          ((eqv? place 0) (cons (car lst) (build-second (cdr lst) 0)))
+          (else (build-second (cdr lst) (- place 1)))))
+  (cons (build-first lst place) (cons (build-second lst place) '())))
 
 (define tests
   (lambda ()
@@ -188,4 +207,8 @@
     (print "(b b c c a a a a a a f f) -> " (dupli '(b c a a a f)))
     ;; 15
     (print "(b b b c c c a a a e e e) -> " (repli '(b c a e) 3))
+    ;; 16
+    (print "(a b d e g h k) -> " (drop '(a b c d e f g h i k) 3))
+    ;; 17
+    (print "((a b c) (d e f g h i k)) -> " (split '(a b c d e f g h i k) 3))
     ))
