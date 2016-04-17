@@ -162,7 +162,6 @@
      ))
   (inner-drop lst outer-count))
 
-;; count elements and start from back?
 (define (split lst place)
   (define (build-first lst place)
     (cond ((eqv? place 0) '())
@@ -172,6 +171,58 @@
           ((eqv? place 0) (cons (car lst) (build-second (cdr lst) 0)))
           (else (build-second (cdr lst) (- place 1)))))
   (cons (build-first lst place) (cons (build-second lst place) '())))
+
+(define (slice lst begin end)
+  (define (skip-start lst begin)
+    (cond
+     ((eqv? begin 1) lst)
+     (else (skip-start (cdr lst) (- begin 1)))))
+  (define (get-range lst end)
+    (cond
+     ((eqv? end 0) '())
+     (else (cons (car lst) (get-range (cdr lst) (- end 1))))))
+  (get-range (skip-start lst begin) (+ (- end begin) 1)))
+
+
+(define (rotate lst places)
+  (define (rotate-left lst places)
+    (cond ((eqv? places 0) lst)
+          (else (append (car (cdr (split lst places))) (car (split lst places))))))
+  (define (rotate-right lst places)
+    (append
+     (car (cdr (split lst (+ (length lst) places))))
+     (car (split lst (+ (length lst) places)))))
+  (cond
+   ((> 0 places) (rotate-right lst places))
+   (else (rotate-left lst places))))
+
+(define (remove-at lst place)
+  (append
+   (car (split lst (- place 1))) (car (cdr (split lst place)))))
+
+(define (insert-at atom lst place)
+  (append
+   (car (split lst (- place 1))) (cons atom '()) (car (cdr (split lst (- place 1))))))
+
+
+
+(define (range begin end)
+  (define (range-up begin end)
+    (define (inner begin current)
+      (cond
+       ((eqv? current end) (cons current '()))
+       (else (cons current (inner begin (+ current 1))))))
+    (inner begin begin))
+  (define (range-down end begin)
+    (define (inner end current)
+      (cond
+       ((eqv? current begin)
+        (cons current '()))
+       (else (cons current (inner end (- current 1))))))
+    (inner end end))
+  (cond
+   ((> begin end) (range-down begin end))
+   (else (range-up begin end))))
 
 (define tests
   (lambda ()
@@ -211,4 +262,16 @@
     (print "(a b d e g h k) -> " (drop '(a b c d e f g h i k) 3))
     ;; 17
     (print "((a b c) (d e f g h i k)) -> " (split '(a b c d e f g h i k) 3))
+    ;; 18
+    (print "(c d e f g) -> " (slice '(a b c d e f g h i k l m n o p) 3 7))
+    ;; 19
+    (print "(d e f g h a b c) -> " (rotate '(a b c d e f g h) 3))
+    (print "(g h a b c d e f) -> " (rotate '(a b c d e f g h) -2))
+    ;; 20
+    (print "(a c d) -> " (remove-at '(a b c d) 2))
+    ;; 21
+    (print "(a alfa b c d) -> " (insert-at 'alfa '(a b c d) 2))
+    ;; 22
+    (print "(4 5 6 7 8 9) -> " (range 4 9))
+    (print "(9 8 7 6 5 4) -> " (range 9 4))
     ))
