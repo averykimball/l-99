@@ -196,15 +196,18 @@
    ((> 0 places) (rotate-right lst places))
    (else (rotate-left lst places))))
 
-(define (remove-at lst place)
-  (append
-   (car (split lst (- place 1))) (car (cdr (split lst place)))))
+(define (remove-at lst pos)
+  (cond
+   ((null? lst) '())
+   ((<= pos 0) '())
+   ((= pos 1) (append (cdr lst) '()))
+   (else
+    (append
+     (car (split lst (- pos 1))) (car (cdr (split lst pos)))))))
 
 (define (insert-at atom lst place)
   (append
    (car (split lst (- place 1))) (cons atom '()) (car (cdr (split lst (- place 1))))))
-
-
 
 (define (range begin end)
   (define (range-up begin end)
@@ -223,6 +226,51 @@
   (cond
    ((> begin end) (range-down begin end))
    (else (range-up begin end))))
+
+(define (rnd-select lst count)
+  (let ((rando (+ 1 (random (- (length lst) 1)))))
+    (cond
+     ((eqv? count 0) '())
+     (else (cons (element-at lst rando) (rnd-select (remove-at lst rando) (- count 1)))))))
+
+(define (lotto-select count limit)
+  (rnd-select (range 0 limit) count))
+
+(define (rnd-permu lst)
+  (let* ((rando (+ 1 (random (- (length lst) 1)))))
+     (cond
+      ((null? lst) '())
+      (else (cons (element-at lst rando) (rnd-permu (remove-at lst rando))))
+      )))
+
+;; (define (combination count pool)
+;;   (cond
+;;    ((> (length pool) count) '())
+;;    ((= (length pool) count) pool) ;; Base-case termination
+;;    (else
+;;     (cons ())
+;;     )
+;;    )  
+;;   )
+
+(define (build-arb count pool)
+  (cond
+   ((= count 0) '())
+   ((null? pool) '())
+   (else (cons (cons (car pool) (build-arb (- count 1) (cdr pool)))
+               (build-arb count (cdr pool))
+               ))))
+
+(define (build-curs count cursor pool)
+  (cond
+   ((= count 0) '())
+   (else (cons (car pool) (build)))
+   )
+  )
+
+(print
+ (build-arb 3 '(a b c d e g h))
+ (build-arb 5 '(a b c d e f g h i j k l)))
 
 (define tests
   (lambda ()
@@ -274,4 +322,10 @@
     ;; 22
     (print "(4 5 6 7 8 9) -> " (range 4 9))
     (print "(9 8 7 6 5 4) -> " (range 9 4))
+    ;; 23
+    (print "(*three random atoms*) -> " (rnd-select '(a b c d e f g h i k) 3))
+    ;; 24
+    (print "(*six random numbers*) -> " (lotto-select 6 50))
+    ;; 25
+    (print "(*shuffled atoms*) -> " (rnd-permu '(a b c d e f g h i k)))
     ))
