@@ -1,3 +1,5 @@
+;; Implemented in Chicken Scheme
+
 (use extras)
 
 (define my-last
