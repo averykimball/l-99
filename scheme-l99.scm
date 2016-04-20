@@ -1,5 +1,7 @@
 (use extras)
 
+;; P1-P28 Lists
+
 (define my-last
   (lambda (list)
     (cond
@@ -253,6 +255,37 @@
 ;;    )  
 ;;   )
 
+;; (define (combination count pool)
+;;   (define (build-committee subcount subpool)
+;;     (cond
+;;      ((=< subcount 0) '())
+;;      (else
+;;       (cons (build-committee (- subcount 1) (cdr subpool)))
+;;       )
+;;      )
+;;     )
+;;   (define (set-build pool)
+;;     (cond
+;;      ((> (length pool) count) '())
+;;      ((= (length pool) count) pool)
+;;      (else '())
+;;      )
+;;     )
+;;   )
+
+(define (trivial count pool)
+  (cond ((= count 0) '())
+        (else (cons (car pool) (trivial (- count 1) (cdr pool))))
+        ))
+
+(define (compli-trivial count current rest)
+  (cond ((= count 0) '())
+        (else (cons current (compli-trivial (- count 1) )))
+        ))
+
+(print (trivial 3 '(a b c d e f g)))
+
+
 (define (build-arb count pool)
   (cond
    ((= count 0) '())
@@ -261,16 +294,15 @@
                (build-arb count (cdr pool))
                ))))
 
-(define (build-curs count cursor pool)
-  (cond
-   ((= count 0) '())
-   (else (cons (car pool) (build)))
-   )
-  )
 
-(print
- (build-arb 3 '(a b c d e g h))
- (build-arb 5 '(a b c d e f g h i j k l)))
+
+
+
+;; P54-P69 Binary Trees
+
+;; P70-P73 Multiway Trees
+
+;; P80-89 Graphs
 
 (define tests
   (lambda ()
