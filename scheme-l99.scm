@@ -1,3 +1,5 @@
+;; Implemented in Chicken Scheme
+
 (use extras)
 
 ;; P1-P28 Lists
